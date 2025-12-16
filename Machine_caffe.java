@@ -1,81 +1,111 @@
-public class Machine_caffe {
+import java.util.Scanner;
 
-    private int Eau = 100;
-    private int Cafe = 50;  
-    private int Gobelets = 10;
-    private int Nb_Caffe = 0;
-    private double prix_expresso = 1.5;
-    private double prix_cafe_allonge = 2.0;
+class MachineCaffe {
+
+    private int eau = 100;
+    private int cafe = 50;
+    private int gobelets = 10;
+    private int nbCafe = 0;
+
+    private final double PRIX_EXPRESSO = 1.5;
+    private final double PRIX_CAFE_LONG = 2.0;
+    private final int LIMITE_AVANT_MAINTENANCE = 5;
+
     private double argent = 0.0;
-    private double total_caisse = 0.0;
-    private final int Vie = 5;
-    public void Cafe_court() {
-        if (Eau >= 10 && Cafe >= 10 && Gobelets >= 1 && Nb_Caffe < Vie) {
-            Eau -= 10;
-            Cafe -= 10;
-            Gobelets -= 1;
-            Nb_Caffe += 1;
-            System.out.println("Voici votre Expresso servi !");
-            if (prix_expresso < argent) {
-                System.out.println("Voici votre monnaie : " + (argent - prix_expresso));
-                argent -= prix_expresso;
-            }
-            total_caisse += prix_expresso;
-        } else if (Nb_Caffe >= Vie) {
-            System.out.println("Machine en maintenance.");
-        } else if (argent < prix_expresso) {
-            System.out.println("Veuillez insérer plus d'argent pour un Expresso.");
-        } else {
-            System.out.println("Stock insuffisant pour un Expresso.");
-        }
+    private double totalCaisse = 0.0;
+
+    private final Scanner scanner;
+
+    public MachineCaffe(Scanner scanner) {
+        this.scanner = scanner;
     }
 
-    public void Cafe_long() {
-        if (Eau >= 20 && Cafe >= 10 && Gobelets >= 1 && Nb_Caffe < Vie) {
-            Eau -= 20;
-            Cafe -= 10;
-            Gobelets -= 1;
-            Nb_Caffe += 1;
-            total_caisse += prix_cafe_allonge;
-            System.out.println("Voici votre Cafe allongé servi !");
-            if (prix_cafe_allonge < argent) {
-                System.out.println("Voici votre monnaie : " + (argent - prix_cafe_allonge));
-                argent -= prix_cafe_allonge;
-            }
-            total_caisse += prix_cafe_allonge;
-        } else if (Nb_Caffe >= Vie) {
-            System.out.println("Machine en maintenance.");
-        } else if (argent < prix_cafe_allonge) {
-            System.out.println("Veuillez insérer plus d'argent pour un Cafe allongé.");
-        } else {
-            System.out.println("Stock insuffisant pour un Cafe allongé.");
+    public void insererArgent() {
+        System.out.print("Montant à insérer : ");
+        while (!scanner.hasNextDouble()) {
+            System.out.println("Veuillez entrer un montant valide.");
+            scanner.nextLine();
         }
-    }
-
-    public void argent() {
-        System.out.println("Veuillez insérer de l'argent : ");
-        java.util.Scanner scanner = new java.util.Scanner(System.in);
         double montant = scanner.nextDouble();
-        scanner.close();
+        scanner.nextLine();
         argent += montant;
-        System.out.println("Vous avez inséré : " + montant + ". Solde actuel : " + argent + ".");
+        System.out.println("Solde actuel : " + argent);
+    }
+
+    public void cafeCourt() {
+        servirCafe(PRIX_EXPRESSO, 10, 10, "Expresso");
+    }
+
+    public void cafeLong() {
+        servirCafe(PRIX_CAFE_LONG, 20, 10, "Café allongé");
+    }
+
+    private void servirCafe(double prix, int eauNecessaire, int cafeNecessaire, String nom) {
+        if (nbCafe >= LIMITE_AVANT_MAINTENANCE) {
+            System.out.println("Machine en maintenance.");
+            return;
+        }
+        if (argent < prix) {
+            System.out.println("Argent insuffisant.");
+            return;
+        }
+        if (eau < eauNecessaire || cafe < cafeNecessaire || gobelets < 1) {
+            System.out.println("Stock insuffisant.");
+            return;
+        }
+
+        eau -= eauNecessaire;
+        cafe -= cafeNecessaire;
+        gobelets--;
+        nbCafe++;
+        argent -= prix;
+        totalCaisse += prix;
+
+        System.out.println(nom + " servi !");
+        System.out.println("Monnaie restante : " + argent);
     }
 
     public void maintenance() {
-        Nb_Caffe = 0;
-        System.out.println("Machine remise en état de fonctionnement.");
+        System.out.println("\n--- Maintenance ---");
+        System.out.println("1. Remplir les ressources");
+        System.out.println("2. Détartrer");
+        System.out.print("Votre choix : ");
+
+        int choix = readInt();
+
+        if (choix == 1) {
+            System.out.print("Ajouter eau : ");
+            eau += readInt();
+            System.out.print("Ajouter café : ");
+            cafe += readInt();
+            System.out.print("Ajouter gobelets : ");
+            gobelets += readInt();
+        } else if (choix == 2) {
+            nbCafe = 0;
+            System.out.println("Machine détartrée.");
+        }
     }
 
-    public void acces_caisse() {
-        System.out.println("Total en caisse : " + total_caisse);
+    public void accesCaisse() {
+        System.out.println("Total caisse : " + totalCaisse);
     }
 
     public void afficherEtat() {
-        System.out.println("État de la machine :");
-        System.out.println("Eau restante : " + Eau + " unités");
-        System.out.println("Café restant : " + Cafe + " unités");
-        System.out.println("Gobelets restants : " + Gobelets);
-        System.out.println("Nombre de cafés servis depuis la dernière maintenance : " + Nb_Caffe);
+        System.out.println("\n--- État de la machine ---");
+        System.out.println("Eau : " + eau);
+        System.out.println("Café : " + cafe);
+        System.out.println("Gobelets : " + gobelets);
+        System.out.println("Cafés servis : " + nbCafe);
         System.out.println("Argent inséré : " + argent);
+    }
+
+    private int readInt() {
+        while (!scanner.hasNextInt()) {
+            System.out.println("Entrée invalide.");
+            scanner.nextLine();
+        }
+        int value = scanner.nextInt();
+        scanner.nextLine();
+        return value;
     }
 }
